@@ -27,7 +27,7 @@ pub fn build(b: *Builder) void {
     };
 
     //All of the release modes work
-    //Debug Mode can cause issues with trap instructions
+    //Debug Mode can cause issues with trap instructions which allegrex lacks
     const mode = builtin.Mode.ReleaseSafe;
 
     const lib = b.addStaticLibrary("zpsp", "src/Zig-PSP/src/psp/libzpsp.zig");
@@ -79,7 +79,7 @@ pub fn build(b: *Builder) void {
     };
 
     const generate_prx = b.addSystemCommand(&[_][]const u8{
-        "src/Zig-PSP/tools/bin/prxgen" ++ append,
+        "./src/Zig-PSP/tools/bin/prxgen" ++ append,
         "zig-cache/app.elf",
         "app.prx"
     });
@@ -89,7 +89,7 @@ pub fn build(b: *Builder) void {
     const sfo = b.addExecutable("sfotool", "./src/Zig-PSP/tools/sfo/src/main.zig");
     sfo.setTarget(hostTarget);
     sfo.setBuildMode(builtin.Mode.ReleaseFast);
-    sfo.setOutputDir("tools/bin");
+    sfo.setOutputDir("src/Zig-PSP/tools/bin");
     sfo.install();
     sfo.step.dependOn(&generate_prx.step);
 
