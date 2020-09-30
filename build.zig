@@ -3,11 +3,8 @@ const z = @import("std").zig;
 const std = @import("std");
 const builtin = @import("builtin");
 
- //This effects the name of the module (seen in PSPLink) & XMB screen menu
-const psp_app_name = "Zig Test App";
-
 //Optional customizations
-const icon0 = "NULL"; //REPLACE WITH PATH TO ICON0.PNG 144 x 80 Thumbnail
+const icon0 = "ICON0.PNG"; //REPLACE WITH PATH TO ICON0.PNG 144 x 80 Thumbnail
 const icon1 = "NULL"; //REPLACE WITH PATH TO ICON1.PMF 144 x 80 animation
 const pic0 = "NULL"; //REPLACE WITH PATH TO PIC0.PNG 480 x 272 Background
 const pic1 = "NULL"; //REPLACE WITH PATH TO PIC1.PMF 480 x 272 Animation
@@ -28,7 +25,7 @@ pub fn build(b: *Builder) void {
 
     //All of the release modes work
     //Debug Mode can cause issues with trap instructions which allegrex lacks
-    const mode = builtin.Mode.ReleaseSafe;
+    const mode = builtin.Mode.ReleaseSmall;
 
     const lib = b.addStaticLibrary("zpsp", "src/Zig-PSP/src/psp/libzpsp.zig");
     lib.setTarget(target);
