@@ -43,22 +43,10 @@ pub fn build(b: *Builder) void {
     exe.setBuildMode(mode);
     exe.setLinkerScriptPath("src/Zig-PSP/tools/linkfile.ld");
     exe.link_eh_frame_hdr = true;
+    exe.link_emit_relocs = true;
     exe.step.dependOn(&lib.step);
-    
-    //New step to link the object
-    //Hopefully can be removed (https://github.com/ziglang/zig/issues/5986)
-    const link_to_elf = b.addSystemCommand(&[_][]const u8{
-        "ld.lld", "-L./zig-cache",
-        "-Tsrc/Zig-PSP/tools/linkfile.ld",
-        exe.getOutputPath(),
-        "-o",
-        "zig-cache/app.elf",
-        "-emit-relocs",
-    });
-    link_to_elf.step.dependOn(&exe.step);
 
-    //Post-build actions
-    
+    //Post-build actions    
     const hostTarget = b.standardTargetOptions(.{});
 
     const prx = b.addExecutable("prxgen", "src/Zig-PSP/tools/prxgen/stub.zig");
@@ -68,7 +56,7 @@ pub fn build(b: *Builder) void {
     prx.setBuildMode(builtin.Mode.ReleaseFast);
     prx.setOutputDir("src/Zig-PSP/tools/bin");
     prx.install();
-    prx.step.dependOn(&link_to_elf.step);
+    prx.step.dependOn(&exe.step);
 
     const append : []const u8 = switch(builtin.os.tag){
         .windows => ".exe",
