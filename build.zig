@@ -24,17 +24,11 @@ pub fn build(b: *Builder) void {
     };
 
     //All of the release modes work
-    //Debug Mode can cause issues with trap instructions which allegrex lacks
-    const mode = builtin.Mode.ReleaseSmall;
-
-    const lib = b.addStaticLibrary("zpsp", "src/Zig-PSP/src/psp/libzpsp.zig");
-    lib.setTarget(target);
-    lib.setBuildMode(mode);
-    lib.setOutputDir("zig-cache/");
+    //Debug Mode can cause issues with trap instructions - use ReleaseSafe for "Debug" builds
+    const mode = builtin.Mode.ReleaseSafe;
 
     //Build from your main file!
-    const exe = b.addObject("main", "src/main.zig"); //TODO: Change to executable
-
+    const exe = b.addExecutable("main", "src/main.zig");
     //Output to zig cache for now
     exe.setOutputDir("zig-cache/");
 
@@ -44,9 +38,8 @@ pub fn build(b: *Builder) void {
     exe.setLinkerScriptPath("src/Zig-PSP/tools/linkfile.ld");
     exe.link_eh_frame_hdr = true;
     exe.link_emit_relocs = true;
-    exe.step.dependOn(&lib.step);
 
-    //Post-build actions    
+    //Post-build actions
     const hostTarget = b.standardTargetOptions(.{});
 
     const prx = b.addExecutable("prxgen", "src/Zig-PSP/tools/prxgen/stub.zig");
@@ -64,8 +57,8 @@ pub fn build(b: *Builder) void {
     };
 
     const generate_prx = b.addSystemCommand(&[_][]const u8{
-        "./src/Zig-PSP/tools/bin/prxgen" ++ append,
-        "zig-cache/app.elf",
+        "src/Zig-PSP/tools/bin/prxgen" ++ append,
+        "src/Zig-PSP/zig-cache/main",
         "app.prx"
     });
     generate_prx.step.dependOn(&prx.step);
@@ -80,8 +73,8 @@ pub fn build(b: *Builder) void {
 
     //Make the SFO file
     const mk_sfo = b.addSystemCommand(&[_][]const u8{
-        "./src/Zig-PSP/tools/bin/sfotool" ++ append, "write",
-        "\"" ++ psp_app_name ++ "\"",
+        "./src/Zig-PSP/tools/bin/sfotool" ++ append, "parse",
+        "sfo.json",
         "PARAM.SFO"
     });
     mk_sfo.step.dependOn(&sfo.step);
